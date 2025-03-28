@@ -6,13 +6,6 @@ from pythonmctsgobang.publictool import posIsValid, checkWin
 from pythonmctsgobang.globals import *
 from typing import Self
 class Node:
-	def __init__(self):
-		self.visits = 0 # 代表访问次数
-		self.wins = 0 # 代表黑子胜利的次数
-		self.state = [] # 代表当前状态下的棋盘状态，是一个Point的列表，每个Point代表一个棋子的位置
-		self.children = [] # 代表当前节点的子节点集合
-		self.parent = None # 代表当前节点的父节点
-		self.nowColor = 1  # 到达当前状态后，下一步要落子的颜色
 
 	def __init__(self, theState, theParent, theNowColor):
 		# 这里可能还要初始化一下其他成员
@@ -30,13 +23,12 @@ class Node:
 		s = set()
 		def func1(p, sign, i):
 			nonlocal s
-			for j in range(1, 3):
-				tx = p.x+sign*j*dx[i]
-				ty = p.y+sign*j*dy[i]
-				if not posIsValid(tx, ty,self.state):
-					continue
-				if (tx, ty) not in s:
-					s.add((tx, ty))
+			tx = p.x+sign*dx[i]
+			ty = p.y+sign*dy[i]
+			if not posIsValid(tx, ty,self.state):
+				return
+			if (tx, ty) not in s:
+				s.add((tx, ty))
 		for p in self.state:
 			for i in range(4):
 				sign = 1
@@ -59,15 +51,13 @@ class Node:
 			raise Exception("calculate UCB for node with no parent")
 		# 这里在计算的时候要处理一下除0异常
 		ucb = math.inf
-		try:
-			rate = self.wins/self.visits # 算的是从父状态到当前状态所落子后黑子的胜率
-			# 这里还要区分一下下一步落子的颜色，计算胜率的时候会有所不同，因为wins代表的是黑色节点胜利的次数，对于白色节点来说要用1-黑色节点胜率
-			# 如果当前状态下该落白子了，说明导致该局面的是一枚黑子的落下，所以当self.nowColor为-1时，胜率应该是rate，否则应该是1-rate
-			winRate = rate if self.nowColor == -1 else 1-rate
-			ucb = winRate + UCB_WEIGHTS * math.sqrt(math.log(self.parent.visits) / self.visits)
-		except ZeroDivisionError:
-			# ucb现在计算出来是无穷大，所以我们返回无穷大即可
-			return math.inf
+		if self.parent.visits == 0 or self.visits == 0:
+			return ucb
+		rate = self.wins/self.visits # 算的是从父状态到当前状态所落子后黑子的胜率
+		# 这里还要区分一下下一步落子的颜色，计算胜率的时候会有所不同，因为wins代表的是黑色节点胜利的次数，对于白色节点来说要用1-黑色节点胜率
+		# 如果当前状态下该落白子了，说明导致该局面的是一枚黑子的落下，所以当self.nowColor为-1时，胜率应该是rate，否则应该是1-rate
+		winRate = rate if self.nowColor == -1 else 1-rate
+		ucb = winRate + UCB_WEIGHTS * math.sqrt(math.log(self.parent.visits) / self.visits)
 		return ucb
 	
 	def getBestChild(self)->None|Self:
@@ -124,7 +114,8 @@ class MCTS:
 		# 先判断一下最后到底是输了还是赢了，所有相关信息都存储到了endNode中，只要看一下endNode保存的棋步数组的最后一个点是什么颜色就行
 		resColor=endNode.state[-1].color
 		# 一直向上回溯直到根节点
-		while node.parent != None:
+		# TODO 只更新了从当前节点一直到“父节点不为空”为止，这可能导致根节点没有更新
+		while node != None:
 			# 只有在黑棋最终获胜的情况下（resColor==1）才会给胜利次数+1，wins代表的是黑色节点胜利的次数
 			node.wins += 1 if resColor==1 else 0
 			node.visits += 1
@@ -154,8 +145,10 @@ class MCTS:
 				# 如果上一步没有经过迭代选择，那说明需要扩展节点
 				self.__expand(node)
 			iterNum+=1
+			node=root
 		# 选择最好的节点
 		bestChild=root.getBestChild()
 		if bestChild is None:
 			return None
+		# TODO 也许可以把bestChild也返回，下一次迭代可以直接从这个节点开始
 		return bestChild.state[-1]
