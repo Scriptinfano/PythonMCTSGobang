@@ -1,8 +1,12 @@
 from pythonmctsgobang.globals import *
 
-def posIsValid(row, col) -> bool:
-	return row >= 0 and row < BOARD_SIZE and col >= 0 and col < BOARD_SIZE
-
+def posIsValid(row, col,state) -> bool:
+    hasPiece=False
+    for s in state:
+        if s.x == row and s.y == col:
+            hasPiece=True
+            break
+    return row >= 0 and row < BOARD_SIZE and col >= 0 and col < BOARD_SIZE and not hasPiece
 
 def checkWin(node) -> bool:
     """

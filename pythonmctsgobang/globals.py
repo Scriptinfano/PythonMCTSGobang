@@ -1,4 +1,17 @@
 UCB_WEIGHTS = 2
-MAX_ITER_NUM = 10
+MAX_ITER_NUM = 1000
 MAX_ITER_TIME = 5
 BOARD_SIZE = 16
+
+# 窗口参数
+GRID_SIZE = 40  # 棋盘格子大小
+BOARD_SIZE = 16  # 棋盘大小（16x16）
+MARGIN = 50  # 边距
+WINDOW_SIZE = GRID_SIZE * (BOARD_SIZE - 1) + 2 * MARGIN
+
+# 颜色
+CHESSBOARD_COLOR = (222, 184, 135)  # 棋盘颜色
+GRID_COLOR = (0, 0, 0)  # 网格线颜色
+HINT_COLOR = (100, 100, 100)  # 鼠标悬停提示点颜色
+BLACK_CHESS = (0, 0, 0)  # 黑棋
+WHITE_CHESS = (255, 255, 255)  # 白棋

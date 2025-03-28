@@ -4,6 +4,7 @@ import random
 from pythonmctsgobang.point import Point
 from pythonmctsgobang.publictool import posIsValid, checkWin
 from pythonmctsgobang.globals import *
+from typing import Self
 class Node:
 	def __init__(self):
 		self.visits = 0 # 代表访问次数
@@ -32,7 +33,7 @@ class Node:
 			for j in range(1, 3):
 				tx = p.x+sign*j*dx[i]
 				ty = p.y+sign*j*dy[i]
-				if not posIsValid(tx, ty):
+				if not posIsValid(tx, ty,self.state):
 					continue
 				if (tx, ty) not in s:
 					s.add((tx, ty))
@@ -69,19 +70,24 @@ class Node:
 			return math.inf
 		return ucb
 	
-	def getBestChild(self):
+	def getBestChild(self)->None|Self:
 		# 选择胜率最大的孩子节点，如果有多个，随机选择一个
 		bestChildren=[]
 		bestRate=-1
 		for child in self.children:
-			rate=1-child.wins/child.visits # 由于AI拿的是白棋，wins记录的是人类黑棋的胜利次数，所以这里要用1-wins/visits
+			try:
+				rate=1-child.wins/child.visits # 由于AI拿的是白棋，wins记录的是人类黑棋的胜利次数，所以这里要用1-wins/visits
+			except ZeroDivisionError:
+				rate=-math.inf
 			if rate>bestRate:
 				bestChildren.clear()
 				bestRate=rate
 				bestChildren.append(child)
 			elif rate==bestRate:
 				bestChildren.append(child)
-		bestChild=bestChildren[random.randint(0,len(bestChildren))]
+		if len(bestChildren)==0:
+			return None
+		bestChild=bestChildren[random.randint(0,len(bestChildren)-1)]
 		return bestChild
 class MCTS:
 
@@ -122,21 +128,22 @@ class MCTS:
 			# 只有在黑棋最终获胜的情况下（resColor==1）才会给胜利次数+1，wins代表的是黑色节点胜利的次数
 			node.wins += 1 if resColor==1 else 0
 			node.visits += 1
+			node=node.parent
 			
 	# MCTS迭代循环的主函数
-	def iteration(self,state:list,nowcolor:int)->Point:
+	def iteration(self,state:list,nowcolor:int)->Point|None:
 		"""
 		state: 当前的棋盘状态，是一个Point的列表，每个Point代表一个棋子的位置
 		nowcolor: 当前应该落子的颜色
 		"""
-		startTime=time.perf_counter()
+		# startTime=time.perf_counter()
 		iterNum=0
 		root=Node(state,None,nowcolor)
 		node=root # node这个引用所指向的节点在后面会不断的变化，但是root节点是不会变的，最后要从root节点的孩子节点中挑一个最好的
-		while iterNum <= MAX_ITER_NUM:
-			curTime=time.perf_counter()
-			if curTime-startTime>=MAX_ITER_TIME:
-				break
+		while iterNum < MAX_ITER_NUM:
+			# curTime=time.perf_counter()
+			# if curTime-startTime>=MAX_ITER_TIME:
+			# 	break
 			node,hasIter=self.__selection(node)
 			# select之后按照情况决定是expand还是rollout
 			if hasIter and node.visits == 0:
@@ -146,6 +153,9 @@ class MCTS:
 			else:
 				# 如果上一步没有经过迭代选择，那说明需要扩展节点
 				self.__expand(node)
+			iterNum+=1
 		# 选择最好的节点
 		bestChild=root.getBestChild()
+		if bestChild is None:
+			return None
 		return bestChild.state[-1]
