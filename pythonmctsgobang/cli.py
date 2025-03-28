@@ -7,7 +7,7 @@ Be creative! do whatever you want!
 - Start a web application
 - Import things from your .base module
 """
-
+from pythonmctsgobang.mygame import game_loop
 
 def main():  # pragma: no cover
     """
@@ -25,4 +25,4 @@ def main():  # pragma: no cover
         * List all available tasks
         * Run an application (Flask, FastAPI, Django, etc.)
     """
-    print("This will do something")
+    game_loop()
