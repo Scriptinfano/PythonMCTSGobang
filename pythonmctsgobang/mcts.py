@@ -122,14 +122,17 @@ class MCTS:
 			node=node.parent
 			
 	# MCTS迭代循环的主函数
-	def iteration(self,state:list,nowcolor:int)->Point|None:
+	def iteration(self,state:list,nowcolor:int,newRoot:Node|None)->tuple[Point,Node]|None:
 		"""
 		state: 当前的棋盘状态，是一个Point的列表，每个Point代表一个棋子的位置
 		nowcolor: 当前应该落子的颜色
 		"""
 		# startTime=time.perf_counter()
 		iterNum=0
-		root=Node(state,None,nowcolor)
+		if newRoot is not None:
+			root=newRoot
+		else:
+			root=Node(state,None,nowcolor)
 		node=root # node这个引用所指向的节点在后面会不断的变化，但是root节点是不会变的，最后要从root节点的孩子节点中挑一个最好的
 		while iterNum < MAX_ITER_NUM:
 			# curTime=time.perf_counter()
@@ -151,4 +154,4 @@ class MCTS:
 		if bestChild is None:
 			return None
 		# TODO 也许可以把bestChild也返回，下一次迭代可以直接从这个节点开始
-		return bestChild.state[-1]
+		return bestChild.state[-1],bestChild

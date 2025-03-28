@@ -16,7 +16,7 @@ board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
 current_turn = 1  # 1：人类，-1：AI
 # 提示点坐标
 hint_pos = None
-
+root=None #MCTS树的根节点
 def board_to_state(board: list) -> list:
     """将棋盘状态转换为 state 数组"""
     state = []
@@ -61,6 +61,7 @@ def random_move():
 
 
 def ai_move():
+    global root
     """AI 执行落子决策（此处用随机策略，你可以换成 MCTS）"""
     # 生成当前状态的 state 数组
     current_state = []
@@ -71,7 +72,12 @@ def ai_move():
 
     # 运行 MCTS 选择最优落子点
     mcts = MCTS()
-    best_move = mcts.iteration(current_state,-1)
+    best_move,newRoot = mcts.iteration(current_state,-1,root)
+    newRoot.nowColor=-1
+    newRoot.parent=None
+    newRoot.state=board_to_state(board)
+    # TODO newRoot.children 不确定是否更新
+    root=newRoot #更新根节点，下一次调用iteration时，将从新根节点开始
     if best_move:
         board[best_move.x][best_move.y] = -1  # AI 落子
         return best_move
@@ -89,19 +95,11 @@ def check_winner():
     """检查是否有人获胜"""
     class Node:
         """创建一个临时 Node 结构，用于 checkWin()"""
-
         def __init__(self, state):
             self.state = state
-
     # 转换当前棋盘状态为 `state` 格式
-    current_state = []
-    for i in range(BOARD_SIZE):
-        for j in range(BOARD_SIZE):
-            if board[i][j] != 0:
-                current_state.append(Point(board[i][j], i, j))
-
+    current_state = board_to_state(board)
     node = Node(current_state)
-
     # 调用 checkWin() 判断是否有胜者
     if checkWin(node):
         return True
@@ -151,8 +149,10 @@ def show_winner_dialog(winner):
 
 def reset_game():
     """重新初始化游戏"""
-    global board, current_turn
+    global board, current_turn,root
     board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
+    root=None
+    
     current_turn = 1
 
 
