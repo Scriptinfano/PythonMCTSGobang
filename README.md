@@ -1,11 +1,6 @@
 # pythonmctsgobang
 
-[![codecov](https://codecov.io/gh/Scriptinfano/PythonMCTSGobang/branch/main/graph/badge.svg?token=PythonMCTSGobang_token_here)](https://codecov.io/gh/Scriptinfano/PythonMCTSGobang)
-[![CI](https://github.com/Scriptinfano/PythonMCTSGobang/actions/workflows/main.yml/badge.svg)](https://github.com/Scriptinfano/PythonMCTSGobang/actions/workflows/main.yml)
-
-Awesome pythonmctsgobang created by Scriptinfano
-
-![示例截图](示例截图链接) <!-- 可替换为实际截图链接 -->
+![示例截图](./docs/res/img/main_window.png) <!-- 可替换为实际截图链接 -->
 
 ## 项目概述
 
