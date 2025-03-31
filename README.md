@@ -82,8 +82,6 @@ python mygame.py
 - **AI玩家**：自动计算后落白棋。
 - 游戏结束后，点击“确定”按钮重新开始。
 
----
-
 ## 贡献与许可
 
 欢迎提交Issue或Pull Request！  
@@ -114,3 +112,7 @@ $ pythonmctsgobang
 ## Development
 
 Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+## 备注
+
+目前这个项目仅供学习MCTS算法参考使用，因在模拟这一步中采用随机策略，所以在迭代次数不够的情况下，基本上没有任何智能，MCTS真正的价值在于和机器学习结合，配合神经网络训练使用
